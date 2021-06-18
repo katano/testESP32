@@ -1,35 +1,8 @@
 #include <M5Stack.h>
-#include <WiFi.h>
+// #include <WiFi.h>
 
-#define num 10000
-
-
-void setup() {
-  // put your setup code here, to run once:
-    Serial.begin(115200);
-    while(!Serial){
-        ; // wait for serial port to connect  
-    }
-
-    M5.begin();
-    
-    xTaskCreatePinnedToCore(
-        testAtan2
-        ,  "testAtan2"   // A name just for humans
-        ,  4096  // This stack size can be checked & adjusted by reading the Stack Highwater
-        ,  NULL
-        ,  1  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-        ,  NULL 
-        ,  0);   
-}
-
-
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
-}
-
+// #define num 100000
+#define num 1
 
 
 
@@ -72,8 +45,11 @@ static inline float _atan2(float _y, float _x){
             if(_y < 0.0)  a = -a - 90.0;   
         }
     }
+    // delay(1);
+    // float rad = atan2(y, x);
     return a/180.0;
 }
+
 
 
 
@@ -84,31 +60,68 @@ void testAtan2(void *pvParameters){
     bool flg = false;
     disableCore0WDT();
     for(;;){
+        float rad;
         if(flg){
             Serial.print("  _atan2  ");
             tn = micros();
-            for(int i = 0; i < 100000; i ++){
+            for(int i = -100000; i < 100000; i ++){
                 for(int j = 0; j < num; j ++){
-                    float val = (float)i / 1000.0;
-                    float rad = _atan2(0.5, val);
+                    float val = (float)i / 10000.0;
+                    rad = _atan2(0.5, val);
                 }
             }
             M5.Lcd.setCursor(0, 40);
+            // M5.Lcd.printf("          %f  ", rad);
         }else{
             Serial.print("   atan2  ");
             tn = micros();
-            for(int i = 0; i < 100000; i ++){
-                float val = (float)i / 1000.0;
-                float rad = atan2(0.5, val);
+            for(int i = -100000; i < 100000; i ++){
+                for(int j = 0; j < num; j ++){
+                    float val = (float)i / 10000.0;
+                    rad = atan2(0.5, val);
+                }
             }
             M5.Lcd.setCursor(0, 20);
+            // M5.Lcd.printf("          %f  ", rad);
         }
         tm = micros();
         tl = tm-tn;        
-        M5.Lcd.printf("%lu  ", tl);
+        M5.Lcd.printf("%lu  %f", tl, rad);
         Serial.println(tl);
         flg = !flg;
         M5.update();
             
     }
 }
+
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+    Serial.begin(115200);
+    while(!Serial){
+        ; // wait for serial port to connect  
+    }
+
+    M5.begin();
+    
+    xTaskCreatePinnedToCore(
+        testAtan2
+        ,  "testAtan2"   // A name just for humans
+        ,  4096  // This stack size can be checked & adjusted by reading the Stack Highwater
+        ,  NULL
+        ,  1  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+        ,  NULL 
+        ,  0);   
+}
+
+
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+}
+
+
+
