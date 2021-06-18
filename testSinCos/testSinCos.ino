@@ -8,6 +8,78 @@ static float tableCos[num];
 
 
 
+
+
+void init_table(){
+    for(int i = 0; i < num; i ++){
+        tableCos[i] = cos(float(i) * PI / 2.0 / float(num));
+    }
+}
+
+
+float _cos(float rad){
+    float sign = 1.0;
+    int i;
+
+    if(rad < 0.0) rad = -rad;
+    rad = rad/PI;
+    rad = (rad - int(rad/2.0)*2.0);
+
+    if(rad > 1.0) {
+        rad = 2.0 - rad;
+    }
+    if(rad > 0.5){
+        rad = 1.0 - rad;
+        sign = -1;
+    }
+    i = int(rad * 2.0 * num);
+
+    return(sign * tableCos[i]);
+}
+
+
+
+void testAtan2(void *pvParameters){
+    unsigned long tl, tn, tm;
+
+    bool flg = true;
+    disableCore0WDT();
+    for(;;){
+        tn = micros();
+        float val;
+        if(flg){
+            Serial.print("   cos  ");
+            // tn = micros();
+            for(int i = 0; i < num; i ++){
+                for(int j = 0; j < 10; j ++){
+                    val = cos(float(i)*PI*2.0/float(num));
+                }
+            }
+            M5.Lcd.setCursor(0, 20);
+            M5.Lcd.printf("   cos  ");
+        }else{
+            Serial.print("  _cos  ");
+            for(int i = 0; i < num; i ++){
+                for(int j = 0; j < 10; j ++){
+                    val = _cos(float(i)*PI*2.0/float(num));
+                }
+            }
+            M5.Lcd.setCursor(0, 40);
+            M5.Lcd.printf("  _cos  ");
+        }
+        tm = micros();
+        tl = tm-tn;        
+        M5.Lcd.printf("%lu  %f", tl, val);
+        Serial.println(tl);
+        flg = !flg;
+        M5.update();
+            
+    }
+}
+
+
+
+
 void setup() {
   // put your setup code here, to run once:
     Serial.begin(115200);
@@ -44,62 +116,3 @@ void loop() {
 
 }
 
-
-
-void init_table(){
-    for(int i = 0; i < num; i ++){
-        tableCos[i] = cos(float(i) * PI / 2.0 / float(num));
-    }
-}
-float _cos(float rad){
-    float sign = 1.0;
-    int i;
-
-    if(rad < 0.0) rad = -rad;
-    rad = rad/PI;
-    rad = (rad - int(rad/2.0)*2.0);
-
-    if(rad > 1.0) {
-        rad = 2.0 - rad;
-    }
-    if(rad > 0.5){
-        rad = 1.0 - rad;
-        sign = -1;
-    }
-    i = int(rad * 2.0 * num);
-
-    return(sign * tableCos[i]);
-}
-
-
-
-void testAtan2(void *pvParameters){
-    unsigned long tl, tn, tm;
-
-    bool flg = true;
-    disableCore0WDT();
-    for(;;){
-        if(flg){
-            Serial.print("   cos  ");
-            tn = micros();
-            for(int i = 0; i < num; i ++){
-                float val = cos(float(i)*PI*2.0/float(num));
-            }
-            M5.Lcd.setCursor(0, 20);
-        }else{
-            Serial.print("  _cos  ");
-            tn = micros();
-            for(int i = 0; i < num; i ++){
-                float val = _cos(float(i)*PI*2.0/float(num));
-            }
-            M5.Lcd.setCursor(0, 40);
-        }
-        tm = micros();
-        tl = tm-tn;        
-        M5.Lcd.printf("%lu  ", tl);
-        Serial.println(tl);
-        flg = !flg;
-        M5.update();
-            
-    }
-}
